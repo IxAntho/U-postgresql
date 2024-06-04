@@ -1,14 +1,30 @@
 import express from "express";
 import bodyParser from "body-parser";
+import pg from "pg";
 
 const app = express();
 const port = 3000;
+let quiz = [];
 
-let quiz = [
-  { country: "France", capital: "Paris" },
-  { country: "United Kingdom", capital: "London" },
-  { country: "United States of America", capital: "New York" },
-];
+const db = new pg.Client({
+  user: "postgres",
+  host: "localhost",
+  database: "U-postgres",
+  password: "DulSop.2804",
+  port: 5432,
+});
+
+db.connect();
+
+db.query("SELECT * FROM capital", (err, res) => {
+  if (err) {
+    console.error("Error executing query", err.stack);
+  } else {
+    quiz = res.rows;
+  }
+
+  db.end();
+});
 
 let totalCorrect = 0;
 
@@ -28,7 +44,7 @@ app.get("/", async (req, res) => {
 
 // POST a new post
 app.post("/submit", (req, res) => {
-  let answer = req.body.answer.trim();
+  let answer = req.body.answer.trim(); // Trim to get rid of any spaces at the begining or the end of the answer
   let isCorrect = false;
   if (currentQuestion.capital.toLowerCase() === answer.toLowerCase()) {
     totalCorrect++;
@@ -44,11 +60,10 @@ app.post("/submit", (req, res) => {
   });
 });
 
-async function nextQuestion() {
+const nextQuestion = async () => {
   const randomCountry = quiz[Math.floor(Math.random() * quiz.length)];
-
   currentQuestion = randomCountry;
-}
+};
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
