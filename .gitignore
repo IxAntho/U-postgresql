@@ -2,3 +2,4 @@ postgresql_practice/solution.js
 solution.js
 node_modules/
 .DS_Store
+.env
